@@ -29,6 +29,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.LinkedList;
 import javax.swing.JFrame;
 
@@ -40,7 +42,7 @@ import javax.swing.JFrame;
  *
  * @author jonathan
  */
-public class RppViewer extends Applet implements KeyListener, MouseListener, MouseMotionListener {
+public class RppViewer extends Applet implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
     long who = URandom.rand(Integer.MAX_VALUE);
     static IOut _ = new SysOut();
@@ -87,6 +89,7 @@ public class RppViewer extends Applet implements KeyListener, MouseListener, Mou
         addMouseListener(this);
         addMouseMotionListener(this);
         addKeyListener(this);
+        addMouseWheelListener(this);
         changeSize(400, 400);
         setVisible(true);
         setBackground(Color.black);
@@ -146,59 +149,76 @@ public class RppViewer extends Applet implements KeyListener, MouseListener, Mou
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        event(who, ADK.cMouse, ADK.cMouseClicked, e.getModifiers(), e.getX(), e.getY(), (char) 0, 0);
+        event(who, ADK.cMouse, ADK.cMouseClicked, e.getModifiers(), e.getX(), e.getY(), null,null, null, null);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        event(who, ADK.cMouse, ADK.cMousePressed, e.getModifiers(), e.getX(), e.getY(), (char) 0, 0);
+        event(who, ADK.cMouse, ADK.cMousePressed, e.getModifiers(), e.getX(), e.getY(), null,null, null, null);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        event(who, ADK.cMouse, ADK.cMouseReleased, e.getModifiers(), e.getX(), e.getY(), (char) 0, 0);
+        event(who, ADK.cMouse, ADK.cMouseReleased, e.getModifiers(), e.getX(), e.getY(), null,null, null, null);
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        event(who, ADK.cMouse, ADK.cMouseEntered, e.getModifiers(), e.getX(), e.getY(), (char) 0, 0);
+        event(who, ADK.cMouse, ADK.cMouseEntered, e.getModifiers(), e.getX(), e.getY(), null,null, null, null);
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        event(who, ADK.cMouse, ADK.cMouseExited, e.getModifiers(), e.getX(), e.getY(), (char) 0, 0);
+        event(who, ADK.cMouse, ADK.cMouseExited, e.getModifiers(), e.getX(), e.getY(), null,null, null, null);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        event(who, ADK.cMouse, ADK.cMouseDragged, e.getModifiers(), e.getX(), e.getY(), (char) 0, 0);
+        event(who, ADK.cMouse, ADK.cMouseDragged, e.getModifiers(), e.getX(), e.getY(), null,null, null, null);
     }
-
+    
+    long lastMM = 0;
     @Override
     public void mouseMoved(MouseEvent e) {
-        event(who, ADK.cMouse, ADK.cMouseMoved, e.getModifiers(), e.getX(), e.getY(), (char) 0, 0);
+        //long time = System.currentTimeMillis();
+        //if (time -lastMM > 100) {
+            event(who, ADK.cMouse, ADK.cMouseMoved, e.getModifiers(), e.getX(), e.getY(), null,null, null, null);
+        //}
+        //lastMM = time;
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-        event(who, ADK.cKey, ADK.cKeyTyped, e.getModifiers(), lx, ly, e.getKeyChar(), e.getKeyCode());
+        event(who, ADK.cKey, ADK.cKeyTyped, e.getModifiers(), lx, ly, e.getKeyChar(), e.getKeyCode(), null, null);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        event(who, ADK.cKey, ADK.cKeyPressed, e.getModifiers(), lx, ly, e.getKeyChar(), e.getKeyCode());
+        event(who, ADK.cKey, ADK.cKeyPressed, e.getModifiers(), lx, ly, e.getKeyChar(), e.getKeyCode(), null, null);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        event(who, ADK.cKey, ADK.cKeyReleased, e.getModifiers(), lx, ly, e.getKeyChar(), e.getKeyCode());
+        event(who, ADK.cKey, ADK.cKeyReleased, e.getModifiers(), lx, ly, e.getKeyChar(), e.getKeyCode(), null, null);
+    }
+    
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        event(who, ADK.cMouse, ADK.cMouseWheel, e.getModifiers(), lx, ly, null,null, e.getScrollAmount(), e.getWheelRotation());
     }
 
     int lx = 0;
     int ly = 0;
     boolean sendingEvent = false;
     final LinkedList accumulatedEvents = new LinkedList();
-    private void event(long l, int family, int id, int modifiers, int x, int y, char keychar, int keycode) {
+    private void event(long l, int family, int id,
+            Integer modifiers,
+            Integer x,
+            Integer y,
+            Character keychar,
+            Integer keycode,
+            Integer scrollAmount,
+            Integer wheelRotation) {
         lx = x;
         ly = y;
         try {
@@ -207,11 +227,13 @@ public class RppViewer extends Applet implements KeyListener, MouseListener, Mou
             UJson.add(e, "who", l);
             UJson.add(e, "family", family);
             UJson.add(e, "id", id);
-            UJson.add(e, "modifiers", modifiers);
-            UJson.add(e, "x", x);
-            UJson.add(e, "y", y);
-            UJson.add(e, "keychar", (int) keychar);
-            UJson.add(e, "keycode", (int) keycode);
+            if (modifiers != null) UJson.add(e, "modifiers", modifiers);
+            if (x != null) UJson.add(e, "x", x);
+            if (y != null) UJson.add(e, "y", y);
+            if (keychar != null) UJson.add(e, "keychar", (int) keychar);
+            if (keycode != null) UJson.add(e, "keycode", (int) keycode);
+            if (scrollAmount != null) UJson.add(e, "scrollAmount", (int) scrollAmount);
+            if (wheelRotation != null) UJson.add(e, "wheelRotation", (int) wheelRotation);
 
             synchronized (accumulatedEvents) {
                 if (sendingEvent) {

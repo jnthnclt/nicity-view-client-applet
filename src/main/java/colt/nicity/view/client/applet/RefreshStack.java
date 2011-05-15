@@ -5,8 +5,7 @@ import colt.nicity.core.lang.IOut;
 import colt.nicity.core.lang.SysOut;
 import colt.nicity.core.observer.AObservable;
 
-public class RefreshStack extends AObservable implements IRefreshQueue {
-
+public class RefreshStack extends AObservable {
     public RefreshStack() {}
     final private CArray<IRefresh> toRefresh = new CArray<IRefresh>(IRefresh.class);
     public IRefresh working;
@@ -32,7 +31,6 @@ public class RefreshStack extends AObservable implements IRefreshQueue {
     }
 
     Thread running;
-    @Override
     public void addWork(IRefresh _refresh) {
         synchronized (toRefresh) {
             toRefresh.insertLast(_refresh);
